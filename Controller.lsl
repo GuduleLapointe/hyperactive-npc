@@ -1,9 +1,11 @@
 /**
  * Controller.lsl
  *
- * Modificactions by Gudule Lapointe <gudule@speculoos.world>
+ * Version SEP2017-Gudzmod-0.2
  *
  * @Package:    ActiveNPCs
+ *
+ * Modificactions by Gudule Lapointe <gudule@speculoos.world>
  *
  * GitHub:  https://github.com/GuduleLapointe/active-npcs
  * Original version, sources and credits in Documentation notecard or at:
@@ -16,6 +18,7 @@ integer TIMER_INTERVAL=2; // how often to run the timer ////DEFAULT IS 5
 integer autoLoadOnReset=0;
 string LASTNAME="(NPC)";
 
+integer DEBUG = FALSE; // Change to DEBUG = TRUE to get more reading
 
 // Nothing to edit here, see https://github.com/opensimworld/active-npcs for configuration
 
@@ -76,7 +79,10 @@ key npc;
 
 list candidateNode=[];
 
-
+debugMessage(string message) {
+    if(! DEBUG) return;
+    llOwnerSay(message);
+}
 
 string vec2str(vector v)
 {
@@ -147,7 +153,7 @@ LoadPerms()
     permCache = "";
     if (llGetInventoryType("__permissions")==INVENTORY_NOTECARD)
     {
-        llOwnerSay("Loading Permissions...");
+        debugMessage("Loading Permissions...");
         list lines = llParseString2List(osGetNotecard("__permissions"), ["\n"], []);
         integer l;
         for (l=0;l<llGetListLength(lines);l++)
@@ -166,8 +172,8 @@ LoadPerms()
                 if (llSubStringIndex(permCache,rule)<0) permCache+= rule;
             }
         }
-        llOwnerSay(llList2CSV(permList));
-        llOwnerSay(llList2CSV(permCache));
+        debugMessage(llList2CSV(permList));
+        debugMessage(llList2CSV(permCache));
     }
 }
 
@@ -191,7 +197,7 @@ integer IsAllowed(string npc, string cmd, key uid)
         string rule = llList2String(permList,k);
         if (rule==ss || rule==ns || rule==sc || rule==nc)
         {
-            //llOwnerSay("R="+rule);
+            //debugMessage("R="+rule);
             string r = llList2String(permList, k+1);
             if (r =="ALLOW" || r == "DENY")
             {
@@ -241,7 +247,7 @@ ReloadConfig()
             lastNames += l;
         }
     }
-    llOwnerSay("npc_names: "+llList2CSV(availableNames));
+    debugMessage("npc_names: "+llList2CSV(availableNames));
 
     flyTargets = llParseString2List(osGetNotecard("__fly_targets"), [" ", "\n", ""] , []);
 
@@ -310,7 +316,7 @@ doLoadNPC(string first, string last)
 doAddNpc(string name, string unpc)
 {
 
-        llOwnerSay( "Adding '"+name+"'");
+        debugMessage( "Adding '"+name+"'");
         aviUids += unpc;
         aviNames += llToLower(name);
         aviNodes += 1;
@@ -351,7 +357,7 @@ doRemoveNpc(string who)
         aviScriptState = [] + llDeleteSubList(aviScriptState, idx, idx);
         aviPrompts = [] + llDeleteSubList(aviPrompts, idx, idx);
 
-        llOwnerSay("Removing "+who + "");
+        debugMessage("Removing "+who + "");
         osNpcStand(u);
         osNpcRemove(u);
 }
@@ -377,7 +383,7 @@ doInitCmds()
         {
             list l = llParseString2List(line, [" "], []);
             line = "! "+(string)NULL_KEY+" "+llList2String(l,0)+" "+ line;
-            llOwnerSay("InitCmd="+line);
+            debugMessage("InitCmd="+line);
             ProcessNPCCommand(line);
         }
     }
@@ -414,8 +420,8 @@ integer RescanAvis()
                 doAddNpc(nm,  llList2Key(avis, i));
             }
         }
-        llOwnerSay(llList2CSV(aviNames));
-        llOwnerSay(llList2CSV(aviStatus));
+        debugMessage(llList2CSV(aviNames));
+        debugMessage(llList2CSV(aviStatus));
         return llGetListLength(aviUids);
 }
 
@@ -437,7 +443,7 @@ LoadMapData()
             wNodeNames += llList2String(tok,3);
         }
     }
-    llOwnerSay("loaded "+(string)(llGetListLength(wNodes))+" waypoints");
+    debugMessage("loaded "+(string)(llGetListLength(wNodes))+" waypoints");
 
 
     integer tnodes = llGetListLength(wNodes);
@@ -452,7 +458,7 @@ LoadMapData()
         if (a !=b)
             wLinks += [a,b];
     }
-    llOwnerSay("loaded "+(string)(llGetListLength(wLinks)/2)+" links");
+    debugMessage("loaded "+(string)(llGetListLength(wLinks)/2)+" links");
     cache = [];
 }
 
@@ -491,7 +497,7 @@ integer GenPaths(integer a, integer tgt, string path,  integer depth)
 {
     if (depth > 17)
     {
-        //llOwnerSay("Bailing at " + path);
+        //debugMessage("Bailing at " + path);
         return 0;
     }
     integer i;
@@ -542,7 +548,7 @@ string GetGotoPath(integer nodeA, integer nodeB)
 
     foundPaths = [];
     GenPaths(nodeA, nodeB, tmpPath, 0);
-    //llOwnerSay(llList2CSV(foundPaths));
+    //debugMessage(llList2CSV(foundPaths));
     if (llGetListLength(foundPaths) ==0)
         return "";
     integer min = 99999;
@@ -556,7 +562,7 @@ string GetGotoPath(integer nodeA, integer nodeB)
             least = llList2String(foundPaths, i);
         }
     }
-    //llOwnerSay(least);
+    //debugMessage(least);
     return least;
 }
 
@@ -662,7 +668,7 @@ integer ProcessNPCCommand(string inputString)
     list tokens = llParseString2List(inputString, [" "], []);
     // first token should be just "!"
 
-    //llOwnerSay("<<"  + inputString);
+    //debugMessage("<<"  + inputString);
     key sendUid = llList2Key(tokens,1);
     string npcName = llToLower(llList2String(tokens,2));
     string name2 = llToLower(llList2String(tokens,3));
@@ -1041,7 +1047,7 @@ integer ProcessNPCCommand(string inputString)
     else if (cmd1 == "exec")
     {
         list tok2 = ["!", (string)NULL_KEY, cmd2] + llList2List(tokens, 5, -1);
-        //llOwnerSay(llList2CSV(tok2));
+        //debugMessage(llList2CSV(tok2));
         ProcessNPCCommand(llDumpList2String(tok2, " "));
     }
 
@@ -1220,7 +1226,7 @@ integer ProcessNPCCommand(string inputString)
         if (cmd2 != "") suff += "_"+cmd2;
         string nm = llList2String(aviNames, idx);
         if(llGetInventoryType("APP_"+nm+suff) == INVENTORY_NOTECARD) {
-            llOwnerSay("Loading appearance "+"APP_"+nm+suff);
+            debugMessage("Loading appearance "+"APP_"+nm+suff);
             osNpcLoadAppearance(uNPC, "APP_"+nm+suff);
         } else {
             llOwnerSay("Could not find "+"APP_"+nm+suff);
@@ -1396,7 +1402,7 @@ giveCommands(integer n)
 
     string wstr = (string)n+"|SETDATA|"+vec2str(llList2Vector(wayPoints, n));
     wstr += "|"+llList2String(wayNames, n)+"|"+lstr+"|0|"+llList2CSV(lnks);
-    //llOwnerSay(wstr);
+    //debugMessage(wstr);
     llRegionSay(PEG_CHAN, wstr);
 }
 
@@ -1551,7 +1557,7 @@ default
 
                         vector p = osNpcGetPos(npc);
                         string path = llList2String(aviPath, g);
-                        llOwnerSay("Path="+path);
+                        debugMessage("Path="+path);
                         list pnodes = llParseString2List(path, [":"], []);
                         if (llGetListLength(pnodes)<1)
                         {
@@ -1586,7 +1592,7 @@ default
                 while ( scriptIndex>0  && stopNow==0 &&  k++<5) // execute up to 10 lines at once if possible
                 {
 
-                    //llOwnerSay("scriptIndex = "+ (string)scriptIndex);
+                    //debugMessage("scriptIndex = "+ (string)scriptIndex);
                         integer tsAlarm = llList2Integer(aviAlarm, g);
                         if (tsAlarm >0 && llGetUnixTime() >= tsAlarm ) // The script should continue now
                         {
@@ -1666,7 +1672,7 @@ default
             return;
         }
 
-        //llOwnerSay("<<" + str);
+        //debugMessage("<<" + str);
         if (mes == "!") // Something that has been sent from a Listener of attached to an NPC
         {
             ProcessNPCCommand(str);
@@ -1693,7 +1699,7 @@ default
                         jump ballFound;
                 }
             }
-            //llOwnerSay(npcname + ": All balls transparent");
+            //debugMessage(npcname + ": All balls transparent");
             @ballFound;
             if (ball != NULL_KEY)
             {
