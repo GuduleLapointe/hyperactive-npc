@@ -1,3 +1,15 @@
+/**
+ * Controller.lsl
+ *
+ * Modificactions by Gudule Lapointe <gudule@speculoos.world>
+ *
+ * @Package:    ActiveNPCs
+ *
+ * GitHub:  https://github.com/GuduleLapointe/active-npcs
+ * Original version, sources and credits in Documentation notecard or at:
+ *   https://github.com/opensimworld/active-npcs
+ */
+
 integer channel = 68;
 integer PEG_CHAN=699;
 integer TIMER_INTERVAL=2; // how often to run the timer ////DEFAULT IS 5
@@ -1207,8 +1219,12 @@ integer ProcessNPCCommand(string inputString)
         string suff = "";
         if (cmd2 != "") suff += "_"+cmd2;
         string nm = llList2String(aviNames, idx);
-        llOwnerSay("Loading appearance "+"APP_"+nm+suff);
-        osNpcLoadAppearance(uNPC, "APP_"+nm+suff);
+        if(llGetInventoryType("APP_"+nm+suff) == INVENTORY_NOTECARD) {
+            llOwnerSay("Loading appearance "+"APP_"+nm+suff);
+            osNpcLoadAppearance(uNPC, "APP_"+nm+suff);
+        } else {
+            llOwnerSay("Could not find "+"APP_"+nm+suff);
+        }
     }
     else if (cmd1 == "touch")
     {
