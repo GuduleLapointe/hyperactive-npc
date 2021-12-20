@@ -4,7 +4,7 @@ string status;
 list btns ;
 key owner;
 
-string cardName = "_script.scr";
+string cardName = "_NEW.scr";
 
 string scriptText;
 
@@ -13,10 +13,15 @@ list order_buttons(list buttons)
     return llList2List(buttons, -3, -1) + llList2List(buttons, -6, -4) +
         llList2List(buttons, -9, -7) + llList2List(buttons, -12, -10);
 }
- 
+
+
+string vec2str(vector v)
+{
+    return "<"+v.x+","+v.y+","+v.z+">";
+}
 string anim = "";
 integer menuindex;
- 
+
 DialogPlus(key avatar, string message, list buttons, integer channel, integer CurMenu)
 {
     if (12 < llGetListLength(buttons))
@@ -28,7 +33,7 @@ DialogPlus(key avatar, string message, list buttons, integer channel, integer Cu
             CurMenu = 0;
             menuindex = 0;
         }
- 
+
         if((Nbuttons = (llList2List(buttons, (CurMenu * 10), ((CurMenu * 10) + 9)) + ["<<", ">>"])) == ["<<", ">>"])
         {
             menuindex =0;
@@ -43,8 +48,8 @@ DialogPlus(key avatar, string message, list buttons, integer channel, integer Cu
 
 showDialog()
 {
-      btns = ["Close", "movetov", "AddCode", "Clear", "SaveCard", "Reload"]; 
-      llDialog(llGetOwner(), "Current Script: \n"+llGetSubString(scriptText, -480, -1), btns, channel);
+      btns = ["Close", "walk", "AddCode", "Clear", "SaveCard", "Reload"];
+      llDialog(llGetOwner(), "Current Script: "+llGetSubString(scriptText, -480, -1), btns, channel);
 }
 
 startListen()
@@ -57,7 +62,7 @@ default
 {
     state_entry()
     {
-        llSetText("Notecard Editor", <1,1,1>, 1.0);
+        llSetText("", <1,1,1>, 1.0);
         startListen();
 
     }
@@ -67,19 +72,19 @@ default
     {
        startListen();
     }
-    
+
     on_rez(integer n)
     {
         llResetScript();
     }
-    
+
     touch_start(integer num)
     {
-        
+
         showDialog();
         status = "";
     }
-    
+
     listen(integer chan, string who, key id, string msg)
     {
         if (status == "entertext")
@@ -87,17 +92,17 @@ default
             scriptText =  llStringTrim(scriptText, STRING_TRIM) + "\n"+msg+"\n";
             status = "";
         }
-        else if (msg == "movetov" )
+        else if (msg == "walk" )
         {
 
             list res = llGetObjectDetails(llGetOwner(), [OBJECT_POS]);
-            scriptText += "movetov " +(string)llList2Vector(res,0) + "\n";
-            llOwnerSay("movetov " +(string)llList2Vector(res,0) );
-            
+            scriptText += "walk " +vec2str(llList2Vector(res,0)) + "\n";
+            llOwnerSay("walk " +vec2str(llList2Vector(res,0)) );
+
         }
         else if (msg == "AddCode")
         {
-            llTextBox(llGetOwner(), "" +llGetSubString(scriptText, -120,-1)+ "\nAdd code:" ,  channel);
+            llTextBox(llGetOwner(), "" +llGetSubString(scriptText, -120,-1)+ "Acceptible command examples are as follows:\nmovetov <0,0,0>, runtov <0,0,0>, flytov <0,0,0>, say, saych, shout, teleport <0,0,0>, lookat <0,0,0>, exec, anim, light (on or off), follow, walk <0,0,0>, dress, @label, jump, wait, come, help, msgatt (12 13 14 15)\n\nAdd code:" ,  channel);
             status = "entertext";
             return;
         }
@@ -126,7 +131,7 @@ default
         }
         showDialog();
     }
-    
-    
-    
+
+
+
 }
