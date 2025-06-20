@@ -1,0 +1,3 @@
+[submodule "AI-Chatbot"]
+	path = AI-Chatbot
+	url = https://github.com/GuduleLapointe/openai-chatbot-ossl
