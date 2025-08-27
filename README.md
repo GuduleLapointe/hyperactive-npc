@@ -1,4 +1,6 @@
-# ActiveNPCs NPC Controller
+# HyperActiveNPCs NPC Controller
+
+> This is a fork of https://github.com/opensimworld/active-npcs with additional features.
 
 This is a full-featured controller for creating interactive NPCs , scripting them (through notecards) and creating waypoints of your region so that the NPCs can walk around your region. The controller is extremely lightweight (a single script manages all the NPCs) and the NPCs are interactive (i.e. you can give them commands through the local chat).
 
